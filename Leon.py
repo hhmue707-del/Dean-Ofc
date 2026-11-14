@@ -5,28 +5,34 @@ from pyrogram import Client, filters
 from pyrogram.types import Message
 from pyrogram.enums import ChatAction
 
+# Telegram API credentials
 API_ID = 32112636
 API_HASH = "3ca47bf341eeb3a3f0b520a07da67d90"
 
 app = Client("my_userbot", api_id=API_ID, api_hash=API_HASH)
 
+# File paths for messages and voices
 MSG_FILE = "messages.txt"
 VOICE_FILE = "voices.txt"
 
-OWNERS = {6336493222}
+# Multiple Owners setup (Owner နှစ်ယောက် ပြန်ပြင်ထားသည်)
+OWNERS = {8837432063, 6336493222}
 
-active_bully1 = {}
-active_bully2 = {}
-active_bully3 = {}
-active_hide = {}
-custom_names = {}
-global_count = 3
+# Active states and custom configurations dictionaries
+active_bully1 = {}      # {target_id: True/False}
+active_bully2 = {}      # {target_id: True/False}
+active_bully3 = {}      # {target_id: True/False}
+active_hide = {}        # {target_id: True/False}
+custom_names = {}       # {target_id: "Custom Name"}
+global_count = 3        # Default message count
 
+# Capture states
 capturing_messages = False
 capturing_voices = False
 
 owner_filter = filters.me | filters.user(list(OWNERS))
 
+# 1. /Add_Message & /stop_message
 @app.on_message(filters.command("Add_Message", prefixes="/") & owner_filter)
 async def start_add_message(client: Client, message: Message):
     global capturing_messages, capturing_voices
@@ -46,6 +52,7 @@ async def stop_add_message(client: Client, message: Message):
         pass
     capturing_messages = False
 
+# 2. /Add_voice & /stop_voice
 @app.on_message(filters.command("Add_voice", prefixes="/") & owner_filter)
 async def start_add_voice(client: Client, message: Message):
     global capturing_messages, capturing_voices
@@ -65,6 +72,7 @@ async def stop_add_voice(client: Client, message: Message):
         pass
     capturing_voices = False
 
+# Capture text messages when capturing is active
 @app.on_message(filters.text & owner_filter & ~filters.command(["Add_Message", "stop_message", "Add_voice", "stop_voice", "speed", "Count", "Id", "name", "Bully1", "Stopbully1", "Bully2", "Stopbully2", "Bully3", "Stopbully3", "Hide", "Stophide", "Help"]))
 async def capture_owner_inputs(client: Client, message: Message):
     global capturing_messages
@@ -76,6 +84,7 @@ async def capture_owner_inputs(client: Client, message: Message):
         except Exception:
             pass
 
+# Capture voice messages when capturing is active
 @app.on_message(filters.voice & owner_filter)
 async def capture_owner_voices(client: Client, message: Message):
     global capturing_voices
@@ -88,6 +97,7 @@ async def capture_owner_voices(client: Client, message: Message):
         except Exception:
             pass
 
+# Helper function to get random messages from file
 def get_random_messages(count=3):
     if not os.path.exists(MSG_FILE):
         return [f"စံနှုန်းစာသား {i+1}" for i in range(count)]
@@ -100,6 +110,7 @@ def get_random_messages(count=3):
     else:
         return [random.choice(lines) for _ in range(count)]
 
+# Helper function to get random voices from file
 def get_random_voices(count=2):
     if not os.path.exists(VOICE_FILE):
         return []
@@ -112,6 +123,7 @@ def get_random_voices(count=2):
     else:
         return [random.choice(lines) for _ in range(count)]
 
+# 3. /speed Command
 @app.on_message(filters.command("speed", prefixes="/") & owner_filter)
 async def set_speed(client: Client, message: Message):
     try:
@@ -129,6 +141,7 @@ async def set_speed(client: Client, message: Message):
     except ValueError:
         pass
 
+# 4. /Count Command
 @app.on_message(filters.command("Count", prefixes="/") & owner_filter)
 async def set_count(client: Client, message: Message):
     global global_count
@@ -147,6 +160,7 @@ async def set_count(client: Client, message: Message):
     except ValueError:
         pass
 
+# 5. /Id Command
 @app.on_message(filters.command("Id", prefixes="/") & owner_filter)
 async def show_id_info(client: Client, message: Message):
     try:
@@ -175,6 +189,7 @@ async def show_id_info(client: Client, message: Message):
     )
     await client.send_message(message.chat.id, mono_ui)
 
+# 6. /name Command
 @app.on_message(filters.command("name", prefixes="/") & owner_filter)
 async def set_custom_name(client: Client, message: Message):
     try:
@@ -191,6 +206,7 @@ async def set_custom_name(client: Client, message: Message):
     name_text = args[2]
     custom_names[target_id] = name_text
 
+# 7. /Bully1 & /Stopbully1
 @app.on_message(filters.command("Bully1", prefixes="/") & owner_filter)
 async def start_bully1(client: Client, message: Message):
     try:
@@ -222,6 +238,7 @@ async def stop_bully1(client: Client, message: Message):
     except ValueError:
         pass
 
+# 8. /Bully2 & /Stopbully2
 @app.on_message(filters.command("Bully2", prefixes="/") & owner_filter)
 async def start_bully2(client: Client, message: Message):
     try:
@@ -253,6 +270,7 @@ async def stop_bully2(client: Client, message: Message):
     except ValueError:
         pass
 
+# 9. /Bully3 & /Stopbully3 (Via Reply)
 @app.on_message(filters.command("Bully3", prefixes="/") & owner_filter)
 async def start_bully3(client: Client, message: Message):
     try:
@@ -275,6 +293,7 @@ async def stop_bully3(client: Client, message: Message):
     else:
         active_bully3.clear()
 
+# 10. /Hide & /Stophide
 @app.on_message(filters.command("Hide", prefixes="/") & owner_filter)
 async def start_hide(client: Client, message: Message):
     try:
@@ -306,6 +325,7 @@ async def stop_hide(client: Client, message: Message):
     except ValueError:
         pass
 
+# 11. /Help Command
 @app.on_message(filters.command("Help", prefixes="/") & owner_filter)
 async def help_command(client: Client, message: Message):
     try:
@@ -333,6 +353,7 @@ async def help_command(client: Client, message: Message):
     )
     await client.send_message(message.chat.id, help_text)
 
+# 12. Incoming Message Monitor (Private & Group Chats)
 @app.on_message(filters.private | filters.group)
 async def monitor_chats(client: Client, message: Message):
     if not message.from_user:
@@ -345,6 +366,7 @@ async def monitor_chats(client: Client, message: Message):
     delay_speed = getattr(client, "default_speed", 0.1)
     current_count = global_count
 
+    # Check Hide mode
     if active_hide.get(user_id):
         try:
             await message.delete()
@@ -352,6 +374,7 @@ async def monitor_chats(client: Client, message: Message):
             pass
         return
 
+    # Check Bully3 mode (Send 2 random voice messages with Mention + Text inline caption)
     if active_bully3.get(user_id):
         try:
             await client.send_chat_action(message.chat.id, ChatAction.RECORD_AUDIO)
@@ -361,15 +384,20 @@ async def monitor_chats(client: Client, message: Message):
             await asyncio.sleep(delay_speed)
         
         voice_ids = get_random_voices(2)
+        random_texts = get_random_messages(2)
+        
         if voice_ids:
-            for v_id in voice_ids:
-                await message.reply_voice(v_id, caption=mention_tag)
+            for idx, v_id in enumerate(voice_ids):
+                txt = random_texts[idx] if idx < len(random_texts) else random_texts[0]
+                caption_text = f"{mention_tag} {txt}"
+                await message.reply_voice(v_id, caption=caption_text)
                 if delay_speed > 0:
                     await asyncio.sleep(delay_speed)
         else:
-            await message.reply_text(f"{mention_tag}\n(No voice files saved)")
+            await message.reply_text(f"{mention_tag} (No voice files saved)")
         return
 
+    # Check Bully2 mode (Delete message and send lines with Mention + Text in a single line)
     if active_bully2.get(user_id):
         try:
             await message.delete()
@@ -383,9 +411,10 @@ async def monitor_chats(client: Client, message: Message):
                 pass
             if idx > 0 and delay_speed > 0:
                 await asyncio.sleep(delay_speed)
-            await client.send_message(message.chat.id, f"{mention_tag}\n{line}")
+            await client.send_message(message.chat.id, f"{mention_tag} {line}")
         return
 
+    # Check Bully1 mode (Reply with Mention + Text in a single line)
     if active_bully1.get(user_id):
         random_lines = get_random_messages(current_count)
         for idx, line in enumerate(random_lines):
@@ -396,11 +425,11 @@ async def monitor_chats(client: Client, message: Message):
             if idx > 0 and delay_speed > 0:
                 await asyncio.sleep(delay_speed)
             if idx == 0:
-                await message.reply_text(f"{mention_tag}\n{line}")
+                await message.reply_text(f"{mention_tag} {line}")
             else:
-                await client.send_message(message.chat.id, f"{mention_tag}\n{line}")
+                await client.send_message(message.chat.id, f"{mention_tag} {line}")
         return
 
 if __name__ == "__main__":
-    print("UserBot is running with Multi-Owner and Bully3 Voice features...")
+    print("UserBot is running with Multi-Owners (8837432063, 6336493222)...")
     app.run()
